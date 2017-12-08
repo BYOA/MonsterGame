@@ -36,6 +36,7 @@ bool EnemyMove (char grid[GRIDSIZE][GRIDSIZE],  Move *e);
 3. Add final touches to create more user friendliness.
 4. Think like and end-user and what they would do. What are any mistakes or inputs they would make? What should I make clear to the user?
 3. Think of any further ways to simplify code.
+4. Maybe it is possible to use an enumeration data type?
 */
 
 int main ()
