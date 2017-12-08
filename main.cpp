@@ -1,5 +1,5 @@
 //Author: BYOA
-//Program: MonsterGame
+//Program Name: MonsterGame
 //Version 2.0
 /*Program:
 structure changes value via passing by reference. This is because passing pointers will refer to the actual value to be changed,
@@ -9,18 +9,19 @@ just like arrays (arrays are implicity converted to pointers; that's why they ch
 #include <stdlib.h>     /* srand, rand */
 #include <time.h>       /* time */
 
-struct move { //using a structure to define type and the placement on the board.
+struct move { //using a structure to define character type and the placement on the board.
     int x;
     int y;
     char type;
 };
 
-typedef struct move Move;
+typedef struct move Move;  //structure alias.
 
 using namespace std;
 
 /*object.member
-pointer->member*/
+pointer->member 
+for structures and classes*/
 
 constexpr int GRIDSIZE = 9;
 
@@ -30,25 +31,27 @@ bool EnemyMove (char grid[GRIDSIZE][GRIDSIZE],  Move *e);
 
 
 /*For testing.
-NOTE: look at pointer variables value and the memory address it points to and the value it points to doesnt change too much.
-1. just allow the player to move and check that all conditions occur. Make sure movement is correct.
-2. Add enemy movement and ensure that conditions are still correct. make sure movement is still correct.
-3. Add user input conditions to ensure the user cannot break the game. (Need to do)
+1. Add user input conditions to ensure the user cannot break the game. 
+2. minimise magic literals. i.e clean up code for version 3.
+3. Add final touches to create more user friendliness.
+4. Think like and end-user and what they would do. What are any mistakes or inputs they would make? What should I make clear to the user?
+3. Think of any further ways to simplify code.
 */
 
 int main ()
 {
 
   srand (time(NULL));/* initialize random seed for enemy movement */
-
+    
+    char board[GRIDSIZE][GRIDSIZE];
     Move treasure = {8, 8, 'X'};
     Move player = {1, 1, 'G'};
     Move enemy1 = {4, 6, 'T'};
     Move enemy2 = {6, 2, 'T'};
     Move enemy3 = {3, 4, 'T'};
 
-
-    char board[GRIDSIZE][GRIDSIZE];
+    
+    
     //intitalising board with '.' value.
     for (int x = 0; x < GRIDSIZE; x++)
     {
@@ -70,16 +73,22 @@ int main ()
 
             else if (board[x][y] == board[enemy3.x][enemy3.y])
                 board [x][y] = enemy3.type;
-                /*note: putting board[x][y] as an else statement causes errors with enemy3 strut. Why does this occur */
+                /*note: putting board[x][y] as an else statement instead of at top causes errors with enemy3 strut. */
         }
     }
-
+    
+    cout << "                               MONSTER GAME -- BYOA\n\n\n\n";
+    cout << "Monster Game premise is to get to the treasure (marked 'X') but don't get caught by enemies! ('T')\n";
+    cout << "You are able to move using the WASD keys.\n";
+    cout << "You control 'G'. Good luck! Don't get caught!!!\n";
+    cin.ignore();
+    system("CLS");
+           
     bool gameover = 0; //false
     int turncount = 0;
-
     while (!(gameover))
     {
- //NOTE: bug occurs where if you input more than once you move further than expected. Fix this.
+ //pointer delcaration and initalization
     Move *e1ptr = &enemy1;
     Move *e2ptr = &enemy2;
     Move *e3ptr = &enemy3;
@@ -279,14 +288,14 @@ bool EnemyMove (char grid[GRIDSIZE][GRIDSIZE],  Move *e)
 
         if (grid [e->x][e->y] == 'G')
         {
-            grid [e->x][e->y] = 'T';
+            grid [e->x][e->y] = e->type;
             system("CLS");
             DisplayBoard (grid);
             cout << "You have been caught!.\n\nGAME OVER!";
             return true;
         }
         else
-            grid [e->x][e->y] = 'T';
+            grid [e->x][e->y] = e->type;
         break;
 
     case 2://move right
@@ -302,14 +311,14 @@ bool EnemyMove (char grid[GRIDSIZE][GRIDSIZE],  Move *e)
 
         if (grid [e->x][e->y] == 'G')
         {
-            grid [e->x][e->y] = 'T';
+            grid [e->x][e->y] = e->type;
             system("CLS");
             DisplayBoard (grid);
             cout << "You have been caught!.\n\nGAME OVER!";
             return true;
         }
         else
-            grid [e->x][e->y] = 'T';
+            grid [e->x][e->y] = e->type;
         break;
 
     case 3://move up
@@ -325,14 +334,14 @@ bool EnemyMove (char grid[GRIDSIZE][GRIDSIZE],  Move *e)
 
         if (grid [e->x][e->y] == 'G')
         {
-            grid [e->x][e->y] = 'T';
+            grid [e->x][e->y] = e->type;
             system("CLS");
             DisplayBoard (grid);
             cout << "You have been caught!.\n\nGAME OVER!";
             return true;
         }
         else
-            grid [e->x][e->y] = 'T';
+            grid [e->x][e->y] = e->type;
         break;
 
     case 4://move down
@@ -348,14 +357,14 @@ bool EnemyMove (char grid[GRIDSIZE][GRIDSIZE],  Move *e)
 
         if (grid [e->x][e->y] == 'G')
         {
-            grid [e->x][e->y] = 'T';
+            grid [e->x][e->y] = e->type;
             system("CLS");
             DisplayBoard (grid);
             cout << "You have been caught!.\n\nGAME OVER!";
             return true;
         }
         else
-            grid [e->x][e->y] = 'T';
+            grid [e->x][e->y] = e->type;
         break;
     }
 
