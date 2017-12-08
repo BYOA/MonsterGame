@@ -1,381 +1,374 @@
 //Author: BYOA
-//Version 1.0
+//Program: MonsterGame
+//Version 2.0
+/* Remember: functions don't change the value except arrays as they are implicity covert into pointers. Passing by reference will
+change the value of the object. Passing by value will not change the value of the object (unless returning a value and assigning value
+                                                                                          to the objact/variable you want to change the
+                                                                                          value of) */
+/*Program:
+
+DOESN'T WORK. STRUCTURE DOESN'T PASS WITHOUT CRASHING. 
+Edit: NOW IT WORKS.YOU NEED TO PASS STRUCTURE BY REFERNCE TO CHANGE IT'S VALUE.
+*/
+
 
 #include <iostream>
 #include <stdlib.h>     /* srand, rand */
 #include <time.h>       /* time */
 
-/*WHAT TO DO IN PROGRAM:
+struct move { //using a structure to define type and placement on the board.
+    int x;
+    int y;
+    char type;
+};
 
-1. ensure that char cannot result in multiple inputs. That breaks the game.
-2. Add user defined type for movement in rows and columns. Use structures.
-3. Add enemy movement with random generation. (CHECK)
-4. Ensure enemy movement does not go out-of-bounds. (CHECK)
-4. Clean up code into a more useable state. Do this with different versions.
-5. Anctipate input error.
-
-*/
-
-
+typedef struct move Move;
 
 using namespace std;
 
-void DisplayBoard (char grid[9][9]);
+/*object.member
+pointer->member*/
+constexpr int GRIDSIZE = 9;
 
+void DisplayBoard (char grid[GRIDSIZE][GRIDSIZE]);
+bool PlayerMove (char grid[GRIDSIZE][GRIDSIZE],  Move *p);
+bool EnemyMove (char grid[GRIDSIZE][GRIDSIZE],  Move *e);
+
+
+/*For testing.
+NOTE: look at pointer variables value and the memory address it points to and the value it points to doesnt change too much.
+1. just allow the player to move and check that all conditions occur. Make sure movement is correct.
+2. Add enemy movement and ensure that conditions are still correct. make sure movement is still correct.
+3. Add user input conditions to ensure the user cannot break the game. (Need to do)
+*/
 int main ()
 {
-    /* initialize random seed: */
-  srand (time(NULL));
+
+  srand (time(NULL));/* initialize random seed for enemy movement */
+
+    Move treasure = {8, 8, 'X'};
+    Move player = {1, 1, 'G'};
+    Move enemy1 = {4, 6, 'T'};
+    Move enemy2 = {6, 2, 'T'};
+    Move enemy3 = {3, 4, 'T'};
 
 
-    char board[9][9];
-    //intitalising board
-        for (int x = 0; x < 9; x++)
+    char board[GRIDSIZE][GRIDSIZE];
+    //intitalising board with '.' value.
+    for (int x = 0; x < GRIDSIZE; x++)
     {
-        for (int y = 0; y < 9; y++)
+        for (int y = 0; y < GRIDSIZE; y++)
         {
             board[x][y] = '.';
 
+            if (board [x][y] == board[treasure.x][treasure.y])
+                board [x][y] = treasure.type;
+
+            else if (board[x][y] == board[player.x][player.y])
+                board [x][y] = player.type;
+
+            else if (board[x][y] == board[enemy1.x][enemy1.y])
+                board [x][y] = enemy1.type;
+
+            else if (board[x][y] == board[enemy2.x][enemy2.y])
+                board [x][y] = enemy2.type;
+
+            else if (board[x][y] == board[enemy3.x][enemy3.y])
+                board [x][y] = enemy3.type;
+                /*note: putting board[x][y] as an else statement causes errors with enemy3 strut. Why does this occur */
         }
     }
 
-    int treasurecol = 8;
-    int treasurerow = 8;
-    board[treasurerow][treasurecol] = 'X'; //treasure
-    //3 enemies
-
-    int e1row = 4;
-    int e1col = 6;
-
-    int e2row = 6;
-    int e2col = 2;
-
-    int e3row = 3;
-    int e3col = 4;
-
-    board[e1row][e1col] = 'T';
-    board[e2row][e2col] = 'T';
-    board[e3row][e3col] = 'T';
-
-    int playercol = 1;
-    int playerrow =1;
-    board[playerrow][playercol] = 'G'; //player
-
-
-    //displaying board
-
-
-    bool gameover = false;
-    int turncount = 1;
+    bool gameover = 0; //false
+    int turncount = 0;
 
     while (!(gameover))
     {
+ //NOTE: bug occurs where if you input more than once you move further than expected. Fix this.
+    Move *e1ptr = &enemy1;
+    Move *e2ptr = &enemy2;
+    Move *e3ptr = &enemy3;
+    Move *pptr = &player;
+    Move *tptr = &treasure;
+
     system("CLS");
+    DisplayBoard (board);
 
-        DisplayBoard (board);
 
-        char choice;
-        cout << "Turn " << turncount << endl;
-        cout << "Which way will you move? (l,r,u,d)\n";
-        cin >> choice;  //NOTE: bug occurs where if you input more than once you move further than expected. Fix this.
-
-                /* generate secret number between 1 and 4. Put in loop to change number generations. */
+    cout << "Turn " << ++turncount << endl;
 
 
 
-    bool enemymove = false;
-        while (!(enemymove))
-        {
-            int number = rand() % 4 + 1;
+        //Enemy move.
+    gameover = EnemyMove (board, e1ptr);
+    gameover = EnemyMove (board, e2ptr);
+    gameover = EnemyMove (board, e3ptr);
 
-            switch (number)
-            {
-            case 1: //left
-                if (e1col - 1 <= -1 || board[e1row][e1col - 1] == 'X' || e1col - 1 <= -1 || board[e1row][e1col - 1] == 'T')
-                {
-                    number = rand() % 4 + 1;
-                    break;
-                }
+    //Playermove
+    gameover = PlayerMove (board, pptr);
 
-                else
-                {
-                    board[e1row][e1col] = '.';
-                    e1col -= 1;
-                    enemymove = true;
-                }
-
-                if (board[e1row][e1col] == 'G')
-                {
-                     board[e1row][e1col] = 'T';
-                    system("CLS");
-                    DisplayBoard (board);
-                    cout << "You have been caught!.\n\nGAME OVER!";
-                    gameover = true;
-                }
-
-                else {
-                    board[e1row][e1col] = 'T';
-                }
-                break;
-
-            case 2: //right
-                if (e1col + 1 >= 9 || board[e1row][e1col + 1] == 'X' || board[e1row][e1col + 1] == 'T')
-                {
-                    number = rand() % 4 + 1;
-                    break;
-                }
-
-                else
-                {
-                    board[e1row][e1col] = '.';
-                    e1col += 1;
-                    enemymove = true;
-                }
-
-                if (board[e1row][e1col] == 'G')
-                {
-                    board[e1row][e1col] = 'T';
-                    system("CLS");
-                    DisplayBoard (board);
-                    cout << "You have been caught!.\n\nGAME OVER!";
-                    gameover = true;
-                }
-
-                else {
-                    board[e1row][e1col] = 'T';
-                }
-                break;
-
-            case 3: //up
-                if (e1row - 1 <= -1 || board[e1row- 1][e1col ] == 'X' || board[e1row - 1][e1col] == 'T')
-                {
-                    number = rand() % 4 + 1;
-                    break;
-                }
-
-                else
-                {
-                    board[e1row][e1col] = '.';
-                    e1row -= 1;
-                    enemymove = true;
-                }
-
-                if (board[e1row][e1col] == 'G')
-                {
-                     board[e1row][e1col] = 'T';
-                    system("CLS");
-                    DisplayBoard (board);
-                    cout << "You have been caught!.\n\nGAME OVER!";
-                    gameover = true;
-                }
-
-                else {
-                    board[e1row][e1col] = 'T';
-                }
-                break;
-
-            case 4: //down
-                if (e1row + 1 >= 9 || board[e1row + 1][e1col] == 'X' || board[e1row + 1][e1col] == 'T')
-                {
-                    number = rand() % 4 + 1;
-                    break;
-                }
-
-                else
-                {
-                    board[e1row][e1col] = '.';
-                    e1row += 1;
-                    enemymove = true;
-                }
-
-                if (board[e1row][e1col] == 'G')
-                {
-                     board[e1row][e1col] = 'T';
-                    system("CLS");
-                    DisplayBoard (board);
-                    cout << "You have been caught!.\n\nGAME OVER!";
-                    gameover = true;
-                }
-
-                else {
-                    board[e1row][e1col] = 'T';
-                }
-                break;
-            }
-        }
-
-
-
-
-        switch (choice)
-        {
-            // player move
-        case 'l' : case 'L':
-
-                if (playercol - 1 <= -1)
-                {
-                    cout << "You can't go out of bounds. Try again\n";
-                }
-
-                else
-                {
-                    board[playerrow][playercol] = '.';
-                    playercol -= 1;
-                }
-
-                if (board[playerrow][playercol] == 'T')
-                {
-                    system("CLS");
-                    DisplayBoard (board);
-                    cout << "You have been caught!.\n\nGAME OVER!";
-                    gameover = true;
-                }
-
-                else if (board[playerrow][playercol] == 'X')
-                {
-                    board[playerrow][playercol] = 'G';
-                    system("CLS");
-                    DisplayBoard (board);
-
-                    cout << "Congratulations! You got the treaure! \n\nYOU WIN!";
-                    gameover = true;
-                }
-
-                else {
-                    board[playerrow][playercol] = 'G';
-                }
-
-
-
-            break;
-
-        case 'r': case 'R':
-                if (playercol + 1 >= 9)
-                {
-                    cout << "You can't go out of bounds. Try again\n";
-                }
-
-                else
-                {
-                    board[playerrow][playercol] = '.';
-                    playercol += 1;
-                }
-
-                if (board[playerrow][playercol] == 'T')
-                {
-                    system("CLS");
-                    DisplayBoard (board);
-                    cout << "You have been caught!.\n\nGAME OVER!";
-                    gameover = true;
-                }
-
-                else if (board[playerrow][playercol] == 'X')
-                {
-                    board[playerrow][playercol] = 'G';
-                    system("CLS");
-                    DisplayBoard (board);
-
-                    cout << "Congratulations! You got the treaure! \n\nYOU WIN!";
-                    gameover = true;
-                }
-
-                else {
-                board[playerrow][playercol] = 'G';
-                }
-
-            break;
-
-        case 'u': case 'U':
-                if (playerrow - 1 <= -1)
-                {
-                    cout << "You can't go out of bounds. Try again\n";
-                }
-
-                else
-                {
-                    board[playerrow][playercol] = '.';
-                    playerrow -= 1;
-                }
-
-                if (board[playerrow][playercol] == 'T')
-                {
-                    system("CLS");
-                    DisplayBoard (board);
-                    cout << "You have been caught!.\n\nGAME OVER!";
-                    gameover = true;
-                }
-
-                else if (board[playerrow][playercol] == 'X')
-                {
-                    board[playerrow][playercol ] = 'G';
-                    system("CLS");
-                    DisplayBoard (board);
-                    cout << "Congratulations! You got the treaure! \n\nYOU WIN!";
-                    gameover = true;
-                }
-
-                else
-                {
-                    board[playerrow][playercol] = 'G';
-                }
-
-            break;
-
-        case 'd': case 'D':
-                if (playerrow + 1 >= 9)
-                {
-                    cout << "You can't go out of bounds. Try again\n";
-                }
-
-                else
-                {
-                    board[playerrow][playercol] = '.';
-                    playerrow += 1;
-                }
-
-                if (board[playerrow][playercol] == 'T')
-                {
-                    system("CLS");
-                    DisplayBoard (board);
-                    cout << "You have been caught!.\n\nGAME OVER!";
-                    gameover = true;
-                }
-
-                else if (board[playerrow][playercol] == 'X')
-                {
-                    board[playerrow][playercol ] = 'G';
-                    system("CLS");
-                    DisplayBoard (board);
-                    cout << "Congratulations! You got the treaure! \n\nYOU WIN!";
-                    gameover = true;
-                }
-
-                else
-                {
-                    board[playerrow][playercol] = 'G';
-
-                }
-
-            break;
-
-        default :
-            cerr << "ERROR\n\n";
-            return -1; //signals that an error occurred.
-        }
-
-
-        turncount++;
     }
+
+    cout << "\n\n\nGame span: " << turncount << " turns.";
+    return 0;
 }
 
-void DisplayBoard (char grid[9][9])
+
+
+
+
+void DisplayBoard (char grid[GRIDSIZE][GRIDSIZE])
 {
-            for (int x = 0; x < 9; x++) //rows
+            for (int x = 0; x < GRIDSIZE; x++) //rows
         {
-            for (int y = 0; y < 9; y++) //columns
+            for (int y = 0; y < GRIDSIZE; y++) //columns
             {
                 cout << ' ' << grid[x][y] << ' ';
             }
             cout << endl;
         }
+}
+
+
+bool PlayerMove (char grid[GRIDSIZE][GRIDSIZE],  Move *p)
+{
+    char choice;
+    cout << "Which way will you move? (use WASD keys to move)\n";
+    cin >> choice;
+
+      switch(choice)
+    {
+    case 'a': case 'A'://move left
+        if ((p->y - 1 <= -1)) //if/else choice instead of while loop as while loop causes to include else statement
+        {
+            cout << "Wrong choice, try again!.\n";
+            PlayerMove (grid, p); //recursion
+        }
+        else
+        {
+            grid [p->x][p->y] = '.';
+            p->y-= 1;
+        }
+
+        if (grid [p->x][p->y] == 'T')
+        {
+            grid [p->x][p->y] = 'T';
+            system("CLS");
+            DisplayBoard (grid);
+            cout << "You have been caught!.\n\nGAME OVER!";
+            return true;
+        }
+        else if (grid [p->x][p->y] == 'X')
+        {
+            grid [p->x][p->y] = p->type;
+            system("CLS");
+            DisplayBoard (grid);
+            cout << "Congratulations! You got the treaure! \n\nYOU WIN!";
+            return true;
+        }
+        else
+            grid [p->x][p->y] = p->type;
+        break;
+
+    case 'd': case 'D'://move right
+        if ((p->y + 1 >= 9))
+        {
+            cout << "Wrong choice, try again!.\n";
+            PlayerMove (grid, p); //recursion
+        }
+        else
+        {
+            grid [p->x][p->y] = '.';
+            p->y+= 1;
+        }
+
+        if (grid [p->x][p->y] == 'T')
+        {
+            grid [p->x][p->y] = 'T';
+            system("CLS");
+            DisplayBoard (grid);
+            cout << "You have been caught!.\n\nGAME OVER!";
+            return true;
+        }
+        else if (grid [p->x][p->y] == 'X')
+        {
+            grid [p->x][p->y] = p->type;
+            system("CLS");
+            DisplayBoard (grid);
+            cout << "Congratulations! You got the treaure! \n\nYOU WIN!";
+            return true;
+        }
+        else
+            grid [p->x][p->y] = p->type;
+        break;
+
+    case 'w': case 'W'://move up
+        if ((p->x - 1 <= -1))
+        {
+            cout << "Wrong choice, try again!.\n";
+            PlayerMove (grid, p); //recursion
+        }
+        else
+        {
+            grid [p->x][p->y] = '.';
+            p->x-= 1;
+        }
+
+        if (grid [p->x][p->y] == 'T')
+        {
+            grid [p->x][p->y] = 'T';
+            system("CLS");
+            DisplayBoard (grid);
+            cout << "You have been caught!.\n\nGAME OVER!";
+            return true;
+        }
+         else if (grid [p->x][p->y] == 'X')
+        {
+            grid [p->x][p->y] = p->type;
+            system("CLS");
+            DisplayBoard (grid);
+            cout << "Congratulations! You got the treaure! \n\nYOU WIN!";
+            return true;
+        }
+        else
+            grid [p->x][p->y] = p->type;
+        break;
+
+    case 's': case 'S'://move down
+        if ((p->x + 1 >= 9))
+        {
+            cout << "Wrong choice, try again!.\n";
+            PlayerMove (grid, p); //recursion
+        }
+        else
+        {
+            grid [p->x][p->y] = '.';
+            p->x += 1;
+        }
+
+        if (grid [p->x][p->y] == 'T')
+        {
+            grid [p->x][p->y] = 'T';
+            system("CLS");
+            DisplayBoard (grid);
+            cout << "You have been caught!.\n\nGAME OVER!";
+            return true;
+        }
+        else if (grid [p->x][p->y] == 'X')
+        {
+            grid [p->x][p->y] = p->type;
+            system("CLS");
+            DisplayBoard (grid);
+            cout << "Congratulations! You got the treaure! \n\nYOU WIN!";
+            return true;
+        }
+        else
+            grid [p->x][p->y] = p->type;
+        break;
+    }
+
+    return false;
+}
+
+bool EnemyMove (char grid[GRIDSIZE][GRIDSIZE],  Move *e)
+{
+    int number = rand() % 4 + 1; //number generation between 1 to 4.
+
+    switch(number)
+    {
+    case 1://move left
+        if ((e->y - 1 <= -1) || (grid[e->x][e->y - 1] == 'X') || (grid[e->x][e->y - 1] == 'T'))
+        {
+            EnemyMove (grid, e);
+        }
+        else
+        {
+            grid [e->x][e->y] = '.';
+            e->y-= 1;
+        }
+
+
+        if (grid [e->x][e->y] == 'G')
+        {
+            grid [e->x][e->y] = 'T';
+            system("CLS");
+            DisplayBoard (grid);
+            cout << "You have been caught!.\n\nGAME OVER!";
+            return true;
+        }
+        else
+            grid [e->x][e->y] = 'T';
+        break;
+
+    case 2://move right
+        if ((e->y + 1 >= 9) || (grid[e->x][e->y + 1] == 'X') || (grid[e->x][e->y + 1] == 'T'))
+        {
+            EnemyMove (grid, e);  //recursion
+        }
+        else
+        {
+            grid [e->x][e->y] = '.';
+            e->y+= 1;
+        }
+
+        if (grid [e->x][e->y] == 'G')
+        {
+            grid [e->x][e->y] = 'T';
+            system("CLS");
+            DisplayBoard (grid);
+            cout << "You have been caught!.\n\nGAME OVER!";
+            return true;
+        }
+        else
+            grid [e->x][e->y] = 'T';
+        break;
+
+    case 3://move left
+        if ((e->x - 1 <= -1) || (grid[e->x- 1][e->y ] == 'X') || (grid[e->x- 1][e->y ] == 'T'))
+        {
+            EnemyMove (grid, e);  //recursion
+        }
+        else
+        {
+            grid [e->x][e->y] = '.';
+            e->x-= 1;
+        }
+
+        if (grid [e->x][e->y] == 'G')
+        {
+            grid [e->x][e->y] = 'T';
+            system("CLS");
+            DisplayBoard (grid);
+            cout << "You have been caught!.\n\nGAME OVER!";
+            return true;
+        }
+        else
+            grid [e->x][e->y] = 'T';
+        break;
+
+    case 4://move left
+        if ((e->x + 1 >= 9) || (grid[e->x+ 1][e->y ] == 'X') || (grid[e->x+ 1][e->y ] == 'T'))
+        {
+            EnemyMove (grid, e);  //recursion
+        }
+        else
+        {
+        grid [e->x][e->y] = '.';
+        e->x += 1;
+        }
+
+        if (grid [e->x][e->y] == 'G')
+        {
+            grid [e->x][e->y] = 'T';
+            system("CLS");
+            DisplayBoard (grid);
+            cout << "You have been caught!.\n\nGAME OVER!";
+            return true;
+        }
+        else
+            grid [e->x][e->y] = 'T';
+        break;
+    }
+
+    return false;
 }
