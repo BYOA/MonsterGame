@@ -4,7 +4,7 @@
 /*Program:
 structure changes value via passing by reference. This is because passing pointers will refer to the actual value to be changed,
 just like arrays (arrays are implicity converted to pointers; that's why they change the actual value).
-
+*/
 #include <iostream>
 #include <stdlib.h>     /* srand, rand */
 #include <time.h>       /* time */
