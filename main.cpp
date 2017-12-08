@@ -1,22 +1,15 @@
 //Author: BYOA
 //Program: MonsterGame
 //Version 2.0
-/* Remember: functions don't change the value except arrays as they are implicity covert into pointers. Passing by reference will
-change the value of the object. Passing by value will not change the value of the object (unless returning a value and assigning value
-                                                                                          to the objact/variable you want to change the
-                                                                                          value of) */
 /*Program:
-
-DOESN'T WORK. STRUCTURE DOESN'T PASS WITHOUT CRASHING. 
-Edit: NOW IT WORKS.YOU NEED TO PASS STRUCTURE BY REFERNCE TO CHANGE IT'S VALUE.
-*/
-
+structure changes value via passing by reference. This is because passing pointers will refer to the actual value to be changed,
+just like arrays (arrays are implicity converted to pointers; that's why they change the actual value).
 
 #include <iostream>
 #include <stdlib.h>     /* srand, rand */
 #include <time.h>       /* time */
 
-struct move { //using a structure to define type and placement on the board.
+struct move { //using a structure to define type and the placement on the board.
     int x;
     int y;
     char type;
@@ -28,6 +21,7 @@ using namespace std;
 
 /*object.member
 pointer->member*/
+
 constexpr int GRIDSIZE = 9;
 
 void DisplayBoard (char grid[GRIDSIZE][GRIDSIZE]);
@@ -41,6 +35,7 @@ NOTE: look at pointer variables value and the memory address it points to and th
 2. Add enemy movement and ensure that conditions are still correct. make sure movement is still correct.
 3. Add user input conditions to ensure the user cannot break the game. (Need to do)
 */
+
 int main ()
 {
 
@@ -89,26 +84,20 @@ int main ()
     Move *e2ptr = &enemy2;
     Move *e3ptr = &enemy3;
     Move *pptr = &player;
-    Move *tptr = &treasure;
 
     system("CLS");
     DisplayBoard (board);
-
-
     cout << "Turn " << ++turncount << endl;
 
-
-
-        //Enemy move.
+    //Enemy move.
     gameover = EnemyMove (board, e1ptr);
     gameover = EnemyMove (board, e2ptr);
     gameover = EnemyMove (board, e3ptr);
 
     //Playermove
     gameover = PlayerMove (board, pptr);
-
     }
-
+//once loop is false via gameover = true, turn summary occurs.
     cout << "\n\n\nGame span: " << turncount << " turns.";
     return 0;
 }
@@ -267,7 +256,7 @@ bool PlayerMove (char grid[GRIDSIZE][GRIDSIZE],  Move *p)
         break;
     }
 
-    return false;
+    return false; // game still continues if return false.
 }
 
 bool EnemyMove (char grid[GRIDSIZE][GRIDSIZE],  Move *e)
@@ -323,7 +312,7 @@ bool EnemyMove (char grid[GRIDSIZE][GRIDSIZE],  Move *e)
             grid [e->x][e->y] = 'T';
         break;
 
-    case 3://move left
+    case 3://move up
         if ((e->x - 1 <= -1) || (grid[e->x- 1][e->y ] == 'X') || (grid[e->x- 1][e->y ] == 'T'))
         {
             EnemyMove (grid, e);  //recursion
@@ -346,7 +335,7 @@ bool EnemyMove (char grid[GRIDSIZE][GRIDSIZE],  Move *e)
             grid [e->x][e->y] = 'T';
         break;
 
-    case 4://move left
+    case 4://move down
         if ((e->x + 1 >= 9) || (grid[e->x+ 1][e->y ] == 'X') || (grid[e->x+ 1][e->y ] == 'T'))
         {
             EnemyMove (grid, e);  //recursion
@@ -370,5 +359,5 @@ bool EnemyMove (char grid[GRIDSIZE][GRIDSIZE],  Move *e)
         break;
     }
 
-    return false;
+    return false; //return false results in game being continued.
 }
