@@ -6,7 +6,7 @@
 #include <iostream>
 #include <stdlib.h>     /* srand, rand */
 #include <time.h>       /* time */
-#include "monstergame.h"
+#include "monstergame.h" //contains function prototypes, user-defined types and global variables.
 
 
 
