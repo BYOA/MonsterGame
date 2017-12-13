@@ -1,8 +1,8 @@
 //Author: BYOA
 //Program Name: MonsterGame
-//Version 2.0
+//Version 3.0
 /*Program:
-structure changes value via passing by reference. This is because passing pointers will refer to the actual value to be changed,
+structure changes value via passing by address. This is because passing pointers will refer to the actual value to be changed,
 just like arrays (arrays are implicity converted to pointers; that's why they change the actual value).
 */
 #include <iostream>
@@ -10,8 +10,8 @@ just like arrays (arrays are implicity converted to pointers; that's why they ch
 #include <time.h>       /* time */
 
 struct move { //using a structure to define character type and the placement on the board.
-    int x;
-    int y;
+    int x; //rows
+    int y; //columns
     char type;
 };
 
@@ -20,31 +20,27 @@ typedef struct move Move;  //structure alias.
 using namespace std;
 
 /*object.member
-pointer->member 
+pointer->member
 for structures and classes*/
 
 constexpr int GRIDSIZE = 9;
 
+
 void DisplayBoard (char grid[GRIDSIZE][GRIDSIZE]);
-bool PlayerMove (char grid[GRIDSIZE][GRIDSIZE],  Move *p);
-bool EnemyMove (char grid[GRIDSIZE][GRIDSIZE],  Move *e);
+
+void PlayerMove (char grid[GRIDSIZE][GRIDSIZE],  Move *p);
+bool PlayerMoveCheck ( char grid[GRIDSIZE][GRIDSIZE], Move *p);
+
+void EnemyMove (char grid[GRIDSIZE][GRIDSIZE],  Move *e);
+bool EnemyMoveCheck (char grid[GRIDSIZE][GRIDSIZE],  Move *e);
 
 
-/*For testing.
-1. Add user input conditions to ensure the user cannot break the game. 
-2. minimise magic literals. i.e clean up code for version 3.
-3. Add final touches to create more user friendliness.
-4. Think like and end-user and what they would do. What are any mistakes or inputs they would make? What should I make clear to the user?
-3. Think of any further ways to simplify code.
-4. Maybe it is possible to use an enumeration data type?
-5. Fix those long ass functions. Break up into smaller functions.
-*/
 
 int main ()
 {
 
   srand (time(NULL));/* initialize random seed for enemy movement */
-    
+
     char board[GRIDSIZE][GRIDSIZE];
     Move treasure = {8, 8, 'X'};
     Move player = {1, 1, 'G'};
@@ -52,8 +48,11 @@ int main ()
     Move enemy2 = {6, 2, 'T'};
     Move enemy3 = {3, 4, 'T'};
 
-    
-    
+    Move *e1ptr = &enemy1;
+    Move *e2ptr = &enemy2;
+    Move *e3ptr = &enemy3;
+    Move *pptr = &player;
+
     //intitalising board with '.' value.
     for (int x = 0; x < GRIDSIZE; x++)
     {
@@ -78,35 +77,39 @@ int main ()
                 /*note: putting board[x][y] as an else statement instead of at top causes errors with enemy3 strut. */
         }
     }
-    
+
     cout << "                               MONSTER GAME -- BYOA\n\n\n\n";
     cout << "Monster Game premise is to get to the treasure (marked 'X') but don't get caught by enemies! ('T')\n";
     cout << "You are able to move using the WASD keys.\n";
     cout << "You control 'G'. Good luck! Don't get caught!!!\n";
     cin.ignore();
     system("CLS");
-           
+
     bool gameover = 0; //false
     int turncount = 0;
     while (!(gameover))
     {
  //pointer delcaration and initalization
-    Move *e1ptr = &enemy1;
-    Move *e2ptr = &enemy2;
-    Move *e3ptr = &enemy3;
-    Move *pptr = &player;
+
 
     system("CLS");
     DisplayBoard (board);
     cout << "Turn " << ++turncount << endl;
 
     //Enemy move.
-    gameover = EnemyMove (board, e1ptr);
-    gameover = EnemyMove (board, e2ptr);
-    gameover = EnemyMove (board, e3ptr);
+    EnemyMove (board, e1ptr);
+    EnemyMove (board, e2ptr);
+    EnemyMove (board, e3ptr);
+    gameover = EnemyMoveCheck (board, e1ptr);
+    gameover = EnemyMoveCheck (board, e2ptr);
+    gameover = EnemyMoveCheck (board, e3ptr);
 
     //Playermove
-    gameover = PlayerMove (board, pptr);
+    if (!(gameover)) //an if-statement is needed to ensure that if an enemy results in a game-over, the player cannot make a move.
+        {
+            PlayerMove (board, pptr);
+            gameover = PlayerMoveCheck (board, pptr);
+        }
     }
 //once loop is false via gameover = true, turn summary occurs.
     cout << "\n\n\nGame span: " << turncount << " turns.";
@@ -129,8 +132,33 @@ void DisplayBoard (char grid[GRIDSIZE][GRIDSIZE])
         }
 }
 
+bool PlayerMoveCheck ( char grid[GRIDSIZE][GRIDSIZE], Move *p)
+{
+        if (grid [p->x][p->y] == 'T')
+        {
+            grid [p->x][p->y] = 'T';
+            system("CLS");
+            DisplayBoard (grid);
+            cout << "You have been caught (on player's turn)!.\n\nGAME OVER!";
+            return true;
+        }
+        else if (grid [p->x][p->y] == 'X')
+        {
+            grid [p->x][p->y] = p->type;
+            system("CLS");
+            DisplayBoard (grid);
+            cout << "Congratulations! You got the treaure (on player side)! \n\nYOU WIN!";
+            return true;
+        }
+        else
+        {
+            grid [p->x][p->y] = p->type;
+            return false;
+        }
 
-bool PlayerMove (char grid[GRIDSIZE][GRIDSIZE],  Move *p)
+}
+
+void PlayerMove (char grid[GRIDSIZE][GRIDSIZE],  Move *p)
 {
     char choice;
     cout << "Which way will you move? (use WASD keys to move)\n";
@@ -149,25 +177,6 @@ bool PlayerMove (char grid[GRIDSIZE][GRIDSIZE],  Move *p)
             grid [p->x][p->y] = '.';
             p->y-= 1;
         }
-
-        if (grid [p->x][p->y] == 'T')
-        {
-            grid [p->x][p->y] = 'T';
-            system("CLS");
-            DisplayBoard (grid);
-            cout << "You have been caught!.\n\nGAME OVER!";
-            return true;
-        }
-        else if (grid [p->x][p->y] == 'X')
-        {
-            grid [p->x][p->y] = p->type;
-            system("CLS");
-            DisplayBoard (grid);
-            cout << "Congratulations! You got the treaure! \n\nYOU WIN!";
-            return true;
-        }
-        else
-            grid [p->x][p->y] = p->type;
         break;
 
     case 'd': case 'D'://move right
@@ -181,25 +190,6 @@ bool PlayerMove (char grid[GRIDSIZE][GRIDSIZE],  Move *p)
             grid [p->x][p->y] = '.';
             p->y+= 1;
         }
-
-        if (grid [p->x][p->y] == 'T')
-        {
-            grid [p->x][p->y] = 'T';
-            system("CLS");
-            DisplayBoard (grid);
-            cout << "You have been caught!.\n\nGAME OVER!";
-            return true;
-        }
-        else if (grid [p->x][p->y] == 'X')
-        {
-            grid [p->x][p->y] = p->type;
-            system("CLS");
-            DisplayBoard (grid);
-            cout << "Congratulations! You got the treaure! \n\nYOU WIN!";
-            return true;
-        }
-        else
-            grid [p->x][p->y] = p->type;
         break;
 
     case 'w': case 'W'://move up
@@ -213,25 +203,6 @@ bool PlayerMove (char grid[GRIDSIZE][GRIDSIZE],  Move *p)
             grid [p->x][p->y] = '.';
             p->x-= 1;
         }
-
-        if (grid [p->x][p->y] == 'T')
-        {
-            grid [p->x][p->y] = 'T';
-            system("CLS");
-            DisplayBoard (grid);
-            cout << "You have been caught!.\n\nGAME OVER!";
-            return true;
-        }
-         else if (grid [p->x][p->y] == 'X')
-        {
-            grid [p->x][p->y] = p->type;
-            system("CLS");
-            DisplayBoard (grid);
-            cout << "Congratulations! You got the treaure! \n\nYOU WIN!";
-            return true;
-        }
-        else
-            grid [p->x][p->y] = p->type;
         break;
 
     case 's': case 'S'://move down
@@ -245,32 +216,28 @@ bool PlayerMove (char grid[GRIDSIZE][GRIDSIZE],  Move *p)
             grid [p->x][p->y] = '.';
             p->x += 1;
         }
-
-        if (grid [p->x][p->y] == 'T')
-        {
-            grid [p->x][p->y] = 'T';
-            system("CLS");
-            DisplayBoard (grid);
-            cout << "You have been caught!.\n\nGAME OVER!";
-            return true;
-        }
-        else if (grid [p->x][p->y] == 'X')
-        {
-            grid [p->x][p->y] = p->type;
-            system("CLS");
-            DisplayBoard (grid);
-            cout << "Congratulations! You got the treaure! \n\nYOU WIN!";
-            return true;
-        }
-        else
-            grid [p->x][p->y] = p->type;
         break;
     }
 
-    return false; // game still continues if return false.
 }
+bool EnemyMoveCheck (char grid[GRIDSIZE][GRIDSIZE],  Move *e)
+{
+     if (grid [e->x][e->y] == 'G')
+        {
+            grid [e->x][e->y] = e->type;
+            system("CLS");
+            DisplayBoard (grid);
+            cout << "You have been caught (on the enemy's turn)!.\n\nGAME OVER!";
+            return true;
+        }
+    else
+        {
+            grid [e->x][e->y] = e->type;
+            return false;
 
-bool EnemyMove (char grid[GRIDSIZE][GRIDSIZE],  Move *e)
+        }
+}
+void EnemyMove (char grid[GRIDSIZE][GRIDSIZE],  Move *e)
 {
     int number = rand() % 4 + 1; //number generation between 1 to 4.
 
@@ -286,18 +253,6 @@ bool EnemyMove (char grid[GRIDSIZE][GRIDSIZE],  Move *e)
             grid [e->x][e->y] = '.';
             e->y-= 1;
         }
-
-
-        if (grid [e->x][e->y] == 'G')
-        {
-            grid [e->x][e->y] = e->type;
-            system("CLS");
-            DisplayBoard (grid);
-            cout << "You have been caught!.\n\nGAME OVER!";
-            return true;
-        }
-        else
-            grid [e->x][e->y] = e->type;
         break;
 
     case 2://move right
@@ -310,21 +265,10 @@ bool EnemyMove (char grid[GRIDSIZE][GRIDSIZE],  Move *e)
             grid [e->x][e->y] = '.';
             e->y+= 1;
         }
-
-        if (grid [e->x][e->y] == 'G')
-        {
-            grid [e->x][e->y] = e->type;
-            system("CLS");
-            DisplayBoard (grid);
-            cout << "You have been caught!.\n\nGAME OVER!";
-            return true;
-        }
-        else
-            grid [e->x][e->y] = e->type;
         break;
 
     case 3://move up
-        if ((e->x - 1 <= -1) || (grid[e->x- 1][e->y ] == 'X') || (grid[e->x- 1][e->y ] == 'T'))
+        if ((e->x - 1 <= -1) || (grid[e->x- 1][e->y] == 'X') || (grid[e->x- 1][e->y ] == 'T'))
         {
             EnemyMove (grid, e);  //recursion
         }
@@ -334,16 +278,6 @@ bool EnemyMove (char grid[GRIDSIZE][GRIDSIZE],  Move *e)
             e->x-= 1;
         }
 
-        if (grid [e->x][e->y] == 'G')
-        {
-            grid [e->x][e->y] = e->type;
-            system("CLS");
-            DisplayBoard (grid);
-            cout << "You have been caught!.\n\nGAME OVER!";
-            return true;
-        }
-        else
-            grid [e->x][e->y] = e->type;
         break;
 
     case 4://move down
@@ -356,19 +290,6 @@ bool EnemyMove (char grid[GRIDSIZE][GRIDSIZE],  Move *e)
         grid [e->x][e->y] = '.';
         e->x += 1;
         }
-
-        if (grid [e->x][e->y] == 'G')
-        {
-            grid [e->x][e->y] = e->type;
-            system("CLS");
-            DisplayBoard (grid);
-            cout << "You have been caught!.\n\nGAME OVER!";
-            return true;
-        }
-        else
-            grid [e->x][e->y] = e->type;
         break;
     }
-
-    return false; //return false results in game being continued.
 }
